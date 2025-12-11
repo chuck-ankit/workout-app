@@ -4,7 +4,7 @@ import Header from './components/Header';
 import DayTabs from './components/DayTabs';
 import WorkoutCard from './components/WorkoutCard';
 import InfoBoxes from './components/InfoBoxes';
-import { supabase } from './lib/supabaseClient';
+import { supabase, hasSupabaseConfig } from './lib/supabaseClient';
 import { getWeekStartDateString, isWeekReset, getCurrentDayIndex } from './lib/workoutUtils';
 
 function App() {
@@ -18,14 +18,19 @@ function App() {
     const initializeApp = async () => {
       setIsLoading(true);
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      if (hasSupabaseConfig && supabase) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (session?.user) {
-        setUser(session.user);
-        await loadWorkoutProgress(session.user.id);
+        if (session?.user) {
+          setUser(session.user);
+          await loadWorkoutProgress(session.user.id);
+        } else {
+          loadLocalProgress();
+        }
       } else {
+        // No Supabase credentials, so fall back to local storage immediately.
         loadLocalProgress();
       }
 
@@ -35,21 +40,25 @@ function App() {
 
     initializeApp();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        await loadWorkoutProgress(session.user.id);
-      } else {
-        setUser(null);
-        loadLocalProgress();
-      }
-    });
+    if (hasSupabaseConfig && supabase) {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await loadWorkoutProgress(session.user.id);
+        } else {
+          setUser(null);
+          loadLocalProgress();
+        }
+      });
 
-    return () => {
-      subscription?.unsubscribe();
-    };
+      return () => {
+        subscription?.unsubscribe();
+      };
+    }
+
+    return;
   }, []);
 
   const loadLocalProgress = () => {
@@ -70,6 +79,11 @@ function App() {
   };
 
   const loadWorkoutProgress = async (userId: string) => {
+    if (!hasSupabaseConfig || !supabase) {
+      loadLocalProgress();
+      return;
+    }
+
     const weekStart = getWeekStartDateString();
 
     const { data, error } = await supabase
