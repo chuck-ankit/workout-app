@@ -35,7 +35,7 @@ export default function InfoBoxes() {
         return (
           <div
             key={info.title}
-            className={`${info.bgColor} ${info.borderColor} border-2 rounded-2xl p-5 md:p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 hover:border-opacity-100 animate-slideIn`}
+            className={`${info.bgColor} ${info.borderColor} border-2 rounded-2xl p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-opacity-100 animate-slideIn glass-panel`}
             style={{ animationDelay: `${400 + index * 100}ms` }}
           >
             <div className="flex items-start gap-3 mb-4">

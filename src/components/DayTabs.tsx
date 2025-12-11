@@ -7,7 +7,7 @@ interface DayTabsProps {
 
 export default function DayTabs({ days, activeDay, onDayChange, completedDays = [] }: DayTabsProps) {
   return (
-    <div className="flex gap-2 md:gap-3 overflow-x-auto pb-4 mb-6 scrollbar-hide animate-fadeInUp -mx-4 px-4 md:mx-0 md:px-0">
+    <div className="flex gap-2 md:gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-4 scrollbar-hide animate-fadeInUp -mx-4 px-4 md:mx-0 md:px-0">
       {days.map((day, index) => {
         const isActive = activeDay === index;
         const isCompleted = completedDays.includes(index);
@@ -18,20 +18,22 @@ export default function DayTabs({ days, activeDay, onDayChange, completedDays = 
             key={day}
             onClick={() => onDayChange(index)}
             className={`
-              relative px-4 md:px-6 py-3 rounded-2xl font-semibold whitespace-nowrap
-              transition-all duration-300 transform flex-shrink-0
+              relative w-24 md:w-28 h-16 md:h-20 rounded-2xl font-semibold whitespace-nowrap backdrop-blur
+              transition-all duration-300 transform flex-none flex flex-col items-center justify-center gap-1 text-sm md:text-base tracking-wide border
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 focus-visible:ring-offset-slate-50
               ${
                 isActive
-                  ? 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-xl shadow-teal-500/30 scale-110'
+                  ? 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-xl shadow-teal-500/30 scale-105 border-transparent'
                   : isCompleted && !isRest
-                  ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-300 hover:scale-105'
+                  ? 'bg-emerald-50/80 text-emerald-800 border-emerald-200 hover:-translate-y-1'
                   : isRest
-                  ? 'bg-blue-100 text-blue-700 border-2 border-blue-300 hover:scale-105'
-                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-300 hover:bg-teal-50 hover:scale-105'
+                  ? 'bg-blue-50/80 text-blue-800 border-blue-200 hover:-translate-y-1'
+                  : 'bg-white/80 text-gray-700 border-gray-200 hover:border-teal-200 hover:bg-teal-50/70 hover:-translate-y-1'
               }
             `}
           >
-            {day.substring(0, 3)}
+            <span className="text-xs uppercase text-gray-500">Day {index + 1}</span>
+            <span className="text-base md:text-lg">{day.substring(0, 3)}</span>
             {isCompleted && !isActive && !isRest && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
                 <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
