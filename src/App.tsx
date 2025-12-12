@@ -5,14 +5,16 @@ import DayTabs from './components/DayTabs';
 import WorkoutCard from './components/WorkoutCard';
 import InfoBoxes from './components/InfoBoxes';
 import { supabase, hasSupabaseConfig } from './lib/supabaseClient';
-import { getWeekStartDateString, isWeekReset, getCurrentDayIndex } from './lib/workoutUtils';
+import { getWeekStartDateString, getCurrentDayIndex } from './lib/workoutUtils';
+
+// Single user ID for the app
+const SINGLE_USER_ID = '00000000-0000-0000-0000-000000000000';
 
 function App() {
   const [activeDay, setActiveDay] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
   const totalExercises = workoutData.reduce((total, day) => {
     if (day.isRest) return total;
     return total + day.exercises.length;
@@ -25,18 +27,9 @@ function App() {
       setIsLoading(true);
 
       if (hasSupabaseConfig && supabase) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          setUser(session.user);
-          await loadWorkoutProgress(session.user.id);
-        } else {
-          loadLocalProgress();
-        }
+        await loadWorkoutProgress();
       } else {
-        // No Supabase credentials, so fall back to local storage immediately.
+        // No Supabase credentials, so fall back to local storage
         loadLocalProgress();
       }
 
@@ -45,77 +38,114 @@ function App() {
     };
 
     initializeApp();
-
-    if (hasSupabaseConfig && supabase) {
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await loadWorkoutProgress(session.user.id);
-        } else {
-          setUser(null);
-          loadLocalProgress();
-        }
-      });
-
-      return () => {
-        subscription?.unsubscribe();
-      };
-    }
-
-    return;
   }, []);
 
   const loadLocalProgress = () => {
     const saved = localStorage.getItem('workoutProgress');
-    const reset = localStorage.getItem('lastWeekReset');
+    const lastWeekReset = localStorage.getItem('lastWeekReset');
+    const currentWeekStart = getWeekStartDateString();
 
-    if (isWeekReset(reset)) {
+    // Check if we need to reset (new week started)
+    if (lastWeekReset && lastWeekReset !== currentWeekStart) {
+      // New week - reset progress
       localStorage.removeItem('workoutProgress');
-      localStorage.removeItem('lastWeekReset');
       setCompletedExercises(new Set());
       setCompletedDays([]);
-      localStorage.setItem('lastWeekReset', getWeekStartDateString());
+      localStorage.setItem('lastWeekReset', currentWeekStart);
     } else {
+      // Same week - load saved progress
       if (saved) {
-        setCompletedExercises(new Set(JSON.parse(saved)));
+        try {
+          const exerciseIds = new Set<string>(JSON.parse(saved) as string[]);
+          setCompletedExercises(exerciseIds);
+          updateCompletedDays(exerciseIds);
+        } catch (e) {
+          console.error('Error parsing localStorage data:', e);
+          setCompletedExercises(new Set());
+          setCompletedDays([]);
+        }
+      } else {
+        setCompletedExercises(new Set());
+        setCompletedDays([]);
+      }
+      // Update lastWeekReset if not set
+      if (!lastWeekReset) {
+        localStorage.setItem('lastWeekReset', currentWeekStart);
       }
     }
   };
 
-  const loadWorkoutProgress = async (userId: string) => {
+  const loadWorkoutProgress = async () => {
     if (!hasSupabaseConfig || !supabase) {
       loadLocalProgress();
       return;
     }
 
     const weekStart = getWeekStartDateString();
+    console.log('Loading progress for week:', weekStart);
 
+    // Check if we need to reset (new week started) by comparing with stored week
+    const lastWeekReset = localStorage.getItem('lastWeekReset');
+    if (lastWeekReset && lastWeekReset !== weekStart) {
+      // New week detected - reset progress
+      console.log('New week detected, resetting progress');
+      setCompletedExercises(new Set());
+      setCompletedDays([]);
+      localStorage.setItem('lastWeekReset', weekStart);
+      localStorage.removeItem('workoutProgress');
+      // Don't query database for old week data - we've already reset
+      return;
+    }
+
+    // Load all exercise statuses for the current week (both completed and not completed)
     const { data, error } = await supabase
       .from('workout_progress')
-      .select('exercise_id, day_of_week')
-      .eq('user_id', userId)
-      .eq('week_start_date', weekStart)
-      .eq('completed', true);
+      .select('exercise_id, day_of_week, completed')
+      .eq('user_id', SINGLE_USER_ID)
+      .eq('week_start_date', weekStart);
 
     if (error) {
-      console.error('Error loading progress:', error);
+      console.error('Error loading progress from database:', error);
+      // Fallback to localStorage if database query fails
+      console.log('Falling back to localStorage');
       loadLocalProgress();
       return;
     }
 
-    if (data && data.length > 0) {
-      const exerciseIds = new Set(data.map((d) => d.exercise_id));
-      setCompletedExercises(exerciseIds);
+    console.log('Loaded progress data from database:', data);
 
-      const daysWithCompleted = Array.from(new Set(data.map((d) => d.day_of_week)));
-      const completedDaysWithAllExercises = daysWithCompleted.filter((dayIndex) => {
-        const dayExercises = workoutData[dayIndex].exercises.length;
-        const completedInDay = data.filter((d) => d.day_of_week === dayIndex).length;
-        return dayExercises > 0 && completedInDay === dayExercises;
-      });
-      setCompletedDays(completedDaysWithAllExercises);
+    if (data && data.length > 0) {
+      // Filter only completed exercises
+      const completedData = data.filter((d) => d.completed === true);
+      const exerciseIds = new Set(completedData.map((d) => d.exercise_id));
+      console.log('Setting completed exercises from database:', Array.from(exerciseIds));
+      setCompletedExercises(exerciseIds);
+      updateCompletedDays(exerciseIds);
+      // Sync to localStorage as backup
+      localStorage.setItem('workoutProgress', JSON.stringify([...exerciseIds]));
+      localStorage.setItem('lastWeekReset', weekStart);
+    } else {
+      // No data in database for this week, check localStorage as fallback
+      console.log('No progress data found in database for this week, checking localStorage');
+      const saved = localStorage.getItem('workoutProgress');
+      if (saved) {
+        try {
+          const exerciseIds = new Set<string>(JSON.parse(saved) as string[]);
+          console.log('Found progress in localStorage:', Array.from(exerciseIds));
+          setCompletedExercises(exerciseIds);
+          updateCompletedDays(exerciseIds);
+        } catch (e) {
+          console.error('Error parsing localStorage data:', e);
+          setCompletedExercises(new Set());
+          setCompletedDays([]);
+        }
+      } else {
+        console.log('No progress data found anywhere - starting fresh');
+        setCompletedExercises(new Set());
+        setCompletedDays([]);
+      }
+      // Update lastWeekReset
+      localStorage.setItem('lastWeekReset', weekStart);
     }
   };
 
@@ -130,37 +160,68 @@ function App() {
     }
 
     setCompletedExercises(newCompleted);
+    updateCompletedDays(newCompleted);
 
-    if (user) {
+    // Always save to localStorage as backup
+    localStorage.setItem('workoutProgress', JSON.stringify([...newCompleted]));
+
+    // Save to database if Supabase is configured
+    if (hasSupabaseConfig && supabase) {
       const dayNumberMatches = exerciseId.match(/\d+/g);
       const dayIndex = dayNumberMatches ? Number(dayNumberMatches[0]) : undefined;
 
-      if (!supabase) {
-        console.error('Supabase instance not initialized.');
-        return;
-      }
+      const weekStart = getWeekStartDateString();
+      const progressData = {
+        user_id: SINGLE_USER_ID,
+        exercise_id: exerciseId,
+        day_of_week: dayIndex,
+        week_start_date: weekStart,
+        completed: isCompleting,
+        updated_at: new Date().toISOString(),
+      };
 
-      const { error } = await supabase.from('workout_progress').upsert(
-        {
-          user_id: user.id,
-          exercise_id: exerciseId,
-          day_of_week: dayIndex,
-          week_start_date: getWeekStartDateString(),
-          completed: isCompleting,
-        },
-        { onConflict: 'user_id,exercise_id,week_start_date' }
-      );
+      console.log('Saving exercise status to database:', progressData);
+
+      // First, try to find existing record
+      const { data: existingData, error: selectError } = await supabase
+        .from('workout_progress')
+        .select('id')
+        .eq('user_id', SINGLE_USER_ID)
+        .eq('exercise_id', exerciseId)
+        .eq('week_start_date', weekStart)
+        .maybeSingle();
+
+      let error;
+      if (selectError) {
+        console.error('Error checking existing record:', selectError);
+        error = selectError;
+      } else if (existingData) {
+        // Update existing record
+        console.log('Updating existing record:', existingData.id);
+        const { error: updateError } = await supabase
+          .from('workout_progress')
+          .update({
+            completed: isCompleting,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingData.id);
+        error = updateError;
+      } else {
+        // Insert new record
+        console.log('Inserting new exercise status record');
+        const { error: insertError } = await supabase
+          .from('workout_progress')
+          .insert(progressData);
+        error = insertError;
+      }
 
       if (error) {
-        console.error('Error saving progress:', error);
-        const revertCompleted = new Set(completedExercises);
-        setCompletedExercises(revertCompleted);
+        console.error('Error saving progress to database:', error);
+        // Don't revert UI state - localStorage already saved
+        // User can continue working, and we'll retry on next toggle
       } else {
-        updateCompletedDays(newCompleted);
+        console.log('Exercise status saved successfully to database');
       }
-    } else {
-      localStorage.setItem('workoutProgress', JSON.stringify([...newCompleted]));
-      updateCompletedDays(newCompleted);
     }
   };
 
@@ -285,7 +346,6 @@ function App() {
 
         <footer className="text-center text-gray-600 text-xs md:text-sm py-8">
           <p className="font-semibold">Stay consistent. Stay strong. Transform your life.</p>
-          {user && <p className="text-gray-500 mt-2">Synced with your account</p>}
         </footer>
       </div>
     </div>
