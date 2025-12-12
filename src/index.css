@@ -7,23 +7,38 @@
     color-scheme: light;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
   body {
     @apply bg-slate-50 text-gray-900 antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Optimize scrolling performance */
+    overscroll-behavior-y: contain;
+    /* Enable hardware acceleration */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 }
 
 @layer components {
   .glass-panel {
     @apply bg-white/80 backdrop-blur-sm border border-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.08)];
-    will-change: transform;
+    /* Only use will-change when actually animating */
+    contain: layout style paint;
+    /* GPU acceleration */
+    transform: translateZ(0);
   }
 
   .pill {
     @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase;
+    contain: layout style;
   }
 }
 
@@ -39,27 +54,37 @@
 
   .animate-fadeIn {
     animation: fadeIn 0.4s ease-out;
-    will-change: opacity;
+    /* Only set will-change during animation, remove after */
+    animation-fill-mode: both;
   }
 
   .animate-fadeInUp {
     animation: fadeInUp 0.4s ease-out;
-    will-change: opacity, transform;
+    animation-fill-mode: both;
+    /* Use transform for GPU acceleration */
+    transform: translateZ(0);
   }
 
   .animate-slideIn {
     animation: slideIn 0.3s ease-out forwards;
     opacity: 0;
-    will-change: opacity, transform;
+    animation-fill-mode: both;
+    /* GPU acceleration */
+    transform: translateZ(0);
   }
 
   .animate-expandDown {
     animation: expandDown 0.2s ease-out;
-    will-change: transform, max-height;
+    animation-fill-mode: both;
+    /* Use transform instead of max-height for better performance */
+    transform-origin: top;
+    transform: translateZ(0);
   }
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
+    /* GPU acceleration for continuous animations */
+    transform: translateZ(0);
     will-change: transform;
   }
 
@@ -82,46 +107,78 @@
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(20px) translateZ(0);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) translateZ(0);
     }
   }
 
   @keyframes slideIn {
     from {
       opacity: 0;
-      transform: translateX(-20px);
+      transform: translateX(-20px) translateZ(0);
     }
     to {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(0) translateZ(0);
     }
   }
 
   @keyframes expandDown {
     from {
       opacity: 0;
-      max-height: 0;
-      transform: scaleY(0);
+      transform: scaleY(0) translateZ(0);
       transform-origin: top;
     }
     to {
       opacity: 1;
-      max-height: 500px;
-      transform: scaleY(1);
+      transform: scaleY(1) translateZ(0);
     }
   }
 
   @keyframes float {
     0%,
     100% {
-      transform: translateY(0);
+      transform: translateY(0) translateZ(0);
     }
     50% {
-      transform: translateY(-20px);
+      transform: translateY(-20px) translateZ(0);
+    }
+  }
+
+  /* Performance optimizations */
+  .optimize-render {
+    contain: layout style paint;
+    content-visibility: auto;
+  }
+
+  /* Optimize transitions to use GPU-accelerated properties */
+  .transition-optimized {
+    transition-property: transform, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+  }
+
+  /* Reduce backdrop blur on scroll for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Optimize hover effects */
+  @layer utilities {
+    .hover-lift {
+      transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    }
+    .hover-lift:hover {
+      transform: translateY(-2px) translateZ(0);
     }
   }
 }

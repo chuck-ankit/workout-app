@@ -99,6 +99,14 @@ function App() {
       return;
     }
 
+    // Check if we've previously determined the table doesn't exist
+    const tableExists = localStorage.getItem('supabase_table_exists');
+    if (tableExists === 'false') {
+      // Table doesn't exist, skip Supabase queries to avoid 404 errors
+      loadLocalProgress();
+      return;
+    }
+
     const weekStart = getWeekStartDateString();
 
     // Check if we need to reset (new week started) by comparing with stored week
@@ -121,11 +129,22 @@ function App() {
       .eq('week_start_date', weekStart);
 
     if (error) {
+      // If table doesn't exist, cache this to avoid future 404 errors
+      if (error.code === 'PGRST205') {
+        localStorage.setItem('supabase_table_exists', 'false');
+        // Fallback to localStorage silently
+        loadLocalProgress();
+        return;
+      }
+      // Other errors - log them
       console.error('Error loading progress from database:', error);
       // Fallback to localStorage if database query fails
       loadLocalProgress();
       return;
     }
+
+    // Table exists and query succeeded - cache this
+    localStorage.setItem('supabase_table_exists', 'true');
 
     if (data && data.length > 0) {
       // Filter only completed exercises
@@ -177,63 +196,89 @@ function App() {
 
       // Save to database if Supabase is configured (async, non-blocking)
       if (hasSupabaseConfig && supabase) {
-        const dayNumberMatches = exerciseId.match(/\d+/g);
-        const dayIndex = dayNumberMatches ? Number(dayNumberMatches[0]) : undefined;
+        // Check if table exists - skip if we know it doesn't
+        const tableExists = localStorage.getItem('supabase_table_exists');
+        if (tableExists !== 'false') {
+          // Only proceed with database operations if table might exist
+          const dayNumberMatches = exerciseId.match(/\d+/g);
+          const dayIndex = dayNumberMatches ? Number(dayNumberMatches[0]) : undefined;
 
-        const weekStart = getWeekStartDateString();
-        const progressData = {
-          user_id: SINGLE_USER_ID,
-          exercise_id: exerciseId,
-          day_of_week: dayIndex,
-          week_start_date: weekStart,
-          completed: isCompleting,
-          updated_at: new Date().toISOString(),
-        };
+          const weekStart = getWeekStartDateString();
+          const progressData = {
+            user_id: SINGLE_USER_ID,
+            exercise_id: exerciseId,
+            day_of_week: dayIndex,
+            week_start_date: weekStart,
+            completed: isCompleting,
+            updated_at: new Date().toISOString(),
+          };
 
-        // Fire and forget - don't block UI
-        (async () => {
-          try {
-            // First, try to find existing record
-            const { data: existingData, error: selectError } = await supabase
-              .from('workout_progress')
-              .select('id')
-              .eq('user_id', SINGLE_USER_ID)
-              .eq('exercise_id', exerciseId)
-              .eq('week_start_date', weekStart)
-              .maybeSingle();
-
-            if (selectError) {
-              console.error('Error checking existing record:', selectError);
-              return;
-            }
-
-            if (existingData) {
-              // Update existing record
-              const { error: updateError } = await supabase
+          // Fire and forget - don't block UI
+          (async () => {
+            try {
+              // First, try to find existing record
+              const { data: existingData, error: selectError } = await supabase
                 .from('workout_progress')
-                .update({
-                  completed: isCompleting,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq('id', existingData.id);
-              
-              if (updateError) {
-                console.error('Error updating progress to database:', updateError);
+                .select('id')
+                .eq('user_id', SINGLE_USER_ID)
+                .eq('exercise_id', exerciseId)
+                .eq('week_start_date', weekStart)
+                .maybeSingle();
+
+              if (selectError) {
+                // If table doesn't exist, cache this to avoid future 404 errors
+                if (selectError.code === 'PGRST205') {
+                  localStorage.setItem('supabase_table_exists', 'false');
+                } else {
+                  console.error('Error checking existing record:', selectError);
+                }
+                return;
               }
-            } else {
-              // Insert new record
-              const { error: insertError } = await supabase
-                .from('workout_progress')
-                .insert(progressData);
-              
-              if (insertError) {
-                console.error('Error inserting progress to database:', insertError);
+
+              if (existingData) {
+                // Update existing record
+                const { error: updateError } = await supabase
+                  .from('workout_progress')
+                  .update({
+                    completed: isCompleting,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', existingData.id);
+                
+                if (updateError) {
+                  // If table doesn't exist, cache this to avoid future 404 errors
+                  if (updateError.code === 'PGRST205') {
+                    localStorage.setItem('supabase_table_exists', 'false');
+                  } else {
+                    console.error('Error updating progress to database:', updateError);
+                  }
+                } else {
+                  // Success - ensure table exists flag is set
+                  localStorage.setItem('supabase_table_exists', 'true');
+                }
+              } else {
+                // Insert new record
+                const { error: insertError } = await supabase
+                  .from('workout_progress')
+                  .insert(progressData);
+                
+                if (insertError) {
+                  // If table doesn't exist, cache this to avoid future 404 errors
+                  if (insertError.code === 'PGRST205') {
+                    localStorage.setItem('supabase_table_exists', 'false');
+                  } else {
+                    console.error('Error inserting progress to database:', insertError);
+                  }
+                } else {
+                  // Success - ensure table exists flag is set
+                  localStorage.setItem('supabase_table_exists', 'true');
+                }
               }
+            } catch (error) {
+              console.error('Error saving progress to database:', error);
             }
-          } catch (error) {
-            console.error('Error saving progress to database:', error);
-          }
-        })();
+          })();
+        }
       }
 
       return newCompleted;
@@ -265,13 +310,13 @@ function App() {
   const dayNames = useMemo(() => workoutData.map((d) => d.day), []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 bg-grid-pattern overflow-x-hidden relative">
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -left-10 top-10 w-80 h-80 bg-teal-200/30 blur-3xl rounded-full" />
-        <div className="absolute right-0 bottom-10 w-72 h-72 bg-cyan-200/30 blur-3xl rounded-full" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 bg-grid-pattern overflow-x-hidden relative" style={{ transform: 'translateZ(0)' }}>
+      <div className="pointer-events-none fixed inset-0" style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+        <div className="absolute -left-10 top-10 w-80 h-80 bg-teal-200/30 blur-3xl rounded-full" style={{ transform: 'translateZ(0)' }} />
+        <div className="absolute right-0 bottom-10 w-72 h-72 bg-cyan-200/30 blur-3xl rounded-full" style={{ transform: 'translateZ(0)' }} />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 py-6 md:py-10 space-y-8">
+      <div className="relative max-w-6xl mx-auto px-4 py-6 md:py-10 space-y-8 optimize-render">
         <Header progress={weekProgress} isLoading={isLoading} />
 
         <div className="glass-panel rounded-3xl p-4 md:p-6 space-y-5">

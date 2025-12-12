@@ -30,14 +30,14 @@ function InfoBoxes() {
   ], []);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-12 animate-fadeInUp" style={{ animationDelay: '300ms' }}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-12 animate-fadeInUp optimize-render" style={{ animationDelay: '300ms', transform: 'translateZ(0)' }}>
       {infoData.map((info, index) => {
         const Icon = info.icon;
         return (
           <div
             key={info.title}
-            className={`${info.bgColor} ${info.borderColor} border-2 rounded-2xl p-5 md:p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-opacity-100 animate-slideIn glass-panel`}
-            style={{ animationDelay: `${400 + index * 100}ms` }}
+            className={`${info.bgColor} ${info.borderColor} border-2 rounded-2xl p-5 md:p-6 transition-optimized duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-opacity-100 animate-slideIn glass-panel`}
+            style={{ animationDelay: `${400 + index * 100}ms`, transform: 'translateZ(0)' }}
           >
             <div className="flex items-start gap-3 mb-4">
               <div className={`p-3 rounded-lg bg-gradient-to-br ${info.color} flex-shrink-0`}>

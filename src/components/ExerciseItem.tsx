@@ -31,22 +31,26 @@ function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemPr
 
   return (
     <div
-      className="group animate-slideIn"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className="group animate-slideIn optimize-render"
+      style={{ 
+        animationDelay: `${Math.min(index * 30, 300)}ms`,
+        transform: 'translateZ(0)'
+      }}
     >
       <div
         className={`
           flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 md:p-5
-          transition-all duration-300 rounded-2xl
+          transition-optimized duration-300 rounded-2xl
           ${isCompleted ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-white border border-gray-200 hover:border-teal-300 hover:shadow-md'}
           ${isExpanded ? 'rounded-b-none' : ''}
         `}
+        style={{ transform: 'translateZ(0)' }}
       >
         <button
           onClick={onToggle}
           className={`
             flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-lg border-2
-            transition-all duration-300 flex items-center justify-center
+            transition-optimized duration-300 flex items-center justify-center
             ${
               isCompleted
                 ? 'bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-500 scale-110'
@@ -89,7 +93,7 @@ function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemPr
       </div>
 
       {isExpanded && exercise.muscleGroup && (
-        <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-4 md:p-5 rounded-b-2xl animate-expandDown border-t border-teal-200 shadow-md">
+        <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-4 md:p-5 rounded-b-2xl animate-expandDown border-t border-teal-200 shadow-md optimize-render" style={{ transform: 'translateZ(0)' }}>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-white rounded-lg border border-teal-200">

@@ -8,7 +8,7 @@ interface HeaderProps {
 
 function Header({ progress, isLoading }: HeaderProps) {
   return (
-    <header className="relative overflow-hidden rounded-3xl glass-panel px-5 md:px-8 py-8 animate-fadeInUp">
+    <header className="relative overflow-hidden rounded-3xl glass-panel px-5 md:px-8 py-8 animate-fadeInUp optimize-render" style={{ transform: 'translateZ(0)' }}>
       <div className="absolute inset-0 bg-gradient-to-r from-teal-50 via-white to-cyan-50 opacity-70" />
       <div className="relative z-10 text-center md:text-left">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
@@ -35,7 +35,7 @@ function Header({ progress, isLoading }: HeaderProps) {
           Designed for sustainable strength. Track your days, nail your form, and let recovery carry you to the next milestone.
         </p>
       </div>
-      <div className="relative z-10 inline-block bg-gradient-to-br from-white to-gray-50 backdrop-blur-md px-6 md:px-8 py-5 rounded-2xl border border-gray-200 shadow-lg max-w-md mx-auto md:mx-0 w-full">
+      <div className="relative z-10 inline-block bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm px-6 md:px-8 py-5 rounded-2xl border border-gray-200 shadow-lg max-w-md mx-auto md:mx-0 w-full" style={{ transform: 'translateZ(0)' }}>
         <div className="flex justify-between items-center text-sm mb-3">
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-teal-600" fill="currentColor" />
