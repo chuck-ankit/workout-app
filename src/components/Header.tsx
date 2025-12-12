@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Dumbbell, Zap } from 'lucide-react';
 
 interface HeaderProps {
@@ -5,7 +6,7 @@ interface HeaderProps {
   isLoading?: boolean;
 }
 
-export default function Header({ progress, isLoading }: HeaderProps) {
+function Header({ progress, isLoading }: HeaderProps) {
   return (
     <header className="relative overflow-hidden rounded-3xl glass-panel px-5 md:px-8 py-8 animate-fadeInUp">
       <div className="absolute inset-0 bg-gradient-to-r from-teal-50 via-white to-cyan-50 opacity-70" />
@@ -67,3 +68,5 @@ export default function Header({ progress, isLoading }: HeaderProps) {
     </header>
   );
 }
+
+export default memo(Header);

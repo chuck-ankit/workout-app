@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Check, ChevronDown, Dumbbell, Activity } from 'lucide-react';
 import { Exercise } from '../types/workout';
 
@@ -9,10 +9,10 @@ interface ExerciseItemProps {
   index: number;
 }
 
-export default function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemProps) {
+function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const muscleGroupColors: Record<string, string> = {
+  const muscleGroupColors: Record<string, string> = useMemo(() => ({
     Chest: 'bg-orange-100 text-orange-800 border border-orange-200',
     Back: 'bg-blue-100 text-blue-800 border border-blue-200',
     Shoulders: 'bg-amber-100 text-amber-800 border border-amber-200',
@@ -27,7 +27,7 @@ export default function ExerciseItem({ exercise, isCompleted, onToggle, index }:
     'Full Body': 'bg-indigo-100 text-indigo-800 border border-indigo-200',
     'Inner Thigh': 'bg-pink-100 text-pink-800 border border-pink-200',
     Obliques: 'bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200',
-  };
+  }), []);
 
   return (
     <div
@@ -119,3 +119,5 @@ export default function ExerciseItem({ exercise, isCompleted, onToggle, index }:
     </div>
   );
 }
+
+export default memo(ExerciseItem);

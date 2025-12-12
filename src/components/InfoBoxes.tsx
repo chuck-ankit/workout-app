@@ -1,7 +1,8 @@
+import { memo, useMemo } from 'react';
 import { Flame, Apple, Moon } from 'lucide-react';
 
-export default function InfoBoxes() {
-  const infoData = [
+function InfoBoxes() {
+  const infoData = useMemo(() => [
     {
       icon: Flame,
       title: 'Daily Warm-up',
@@ -26,7 +27,7 @@ export default function InfoBoxes() {
       bgColor: 'bg-gradient-to-br from-blue-50 to-cyan-50',
       borderColor: 'border-blue-200',
     },
-  ];
+  ], []);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-12 animate-fadeInUp" style={{ animationDelay: '300ms' }}>
@@ -51,3 +52,5 @@ export default function InfoBoxes() {
     </div>
   );
 }
+
+export default memo(InfoBoxes);

@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface DayTabsProps {
   days: string[];
   activeDay: number;
@@ -5,7 +7,7 @@ interface DayTabsProps {
   completedDays?: number[];
 }
 
-export default function DayTabs({ days, activeDay, onDayChange, completedDays = [] }: DayTabsProps) {
+function DayTabs({ days, activeDay, onDayChange, completedDays = [] }: DayTabsProps) {
   return (
     <div className="flex gap-2 md:gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-4 scrollbar-hide animate-fadeInUp -mx-4 px-4 md:mx-0 md:px-0">
       {days.map((day, index) => {
@@ -47,3 +49,5 @@ export default function DayTabs({ days, activeDay, onDayChange, completedDays = 
     </div>
   );
 }
+
+export default memo(DayTabs);

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { Armchair, Sparkles, Flame } from 'lucide-react';
 import { WorkoutDay } from '../types/workout';
 import ExerciseItem from './ExerciseItem';
@@ -9,18 +10,23 @@ interface WorkoutCardProps {
   dayIndex: number;
 }
 
-export default function WorkoutCard({
+function WorkoutCard({
   workout,
   completedExercises,
   onToggleExercise,
   dayIndex,
 }: WorkoutCardProps) {
-  const completedCount = workout.exercises.filter((_, index) =>
-    completedExercises.has(`d${dayIndex}-e${index}`)
-  ).length;
-  const completionPercent = workout.exercises.length > 0
-    ? Math.round((completedCount / workout.exercises.length) * 100)
-    : 0;
+  const completedCount = useMemo(() => {
+    return workout.exercises.filter((_, index) =>
+      completedExercises.has(`d${dayIndex}-e${index}`)
+    ).length;
+  }, [workout.exercises, completedExercises, dayIndex]);
+
+  const completionPercent = useMemo(() => {
+    return workout.exercises.length > 0
+      ? Math.round((completedCount / workout.exercises.length) * 100)
+      : 0;
+  }, [completedCount, workout.exercises.length]);
 
   if (workout.isRest) {
     return (
@@ -103,3 +109,5 @@ export default function WorkoutCard({
     </div>
   );
 }
+
+export default memo(WorkoutCard);
