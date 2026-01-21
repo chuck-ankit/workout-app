@@ -39,7 +39,7 @@ function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemPr
 
   return (
     <div
-      className="group animate-slideIn optimize-render"
+      className="group exercise-item animate-slideIn optimize-render"
       style={{ 
         animationDelay,
         transform: 'translateZ(0)'

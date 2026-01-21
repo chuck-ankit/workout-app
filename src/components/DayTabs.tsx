@@ -20,7 +20,7 @@ function DayTabs({ days, activeDay, onDayChange, completedDays = [] }: DayTabsPr
             key={day}
             onClick={() => onDayChange(index)}
             className={`
-              relative w-24 md:w-28 h-16 md:h-20 rounded-2xl font-semibold whitespace-nowrap backdrop-blur
+              relative day-tab font-semibold whitespace-nowrap backdrop-blur
               transition-all duration-300 transform flex-none flex flex-col items-center justify-center gap-1 text-sm md:text-base tracking-wide border
               focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-teal-400 focus-visible:ring-offset-slate-50
               ${
