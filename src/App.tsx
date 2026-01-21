@@ -410,46 +410,7 @@ function App() {
             completedDays={completedDays}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs font-semibold text-teal-700 uppercase tracking-[0.15em] mb-2">Weekly completion</p>
-              <div className="flex items-center justify-between">
-                <span className="text-3xl font-bold text-slate-900">{weekProgress}%</span>
-                <span className="text-xs text-gray-500">Stay consistent</span>
-              </div>
-              <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 transition-all duration-700"
-                  style={{ width: `${weekProgress}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs font-semibold text-cyan-700 uppercase tracking-[0.15em] mb-2">Today’s focus</p>
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-gray-900">{workoutData[activeDay]?.day}</p>
-                <p className="text-sm text-gray-600">{todaysFocus}</p>
-              </div>
-              <div className="mt-3 inline-flex items-center gap-2 text-xs text-gray-600">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Dial in form and tempo
-              </div>
-            </div>
-
-            <div className="glass-panel rounded-2xl p-4">
-              <p className="text-xs font-semibold text-slate-700 uppercase tracking-[0.15em] mb-2">Recovery</p>
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-gray-900">{nextRestDay}</p>
-                <p className="text-sm text-gray-600">Plan hydration and mobility work.</p>
-              </div>
-              <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
-                <span className="pill bg-emerald-50 text-emerald-700 border border-emerald-200">Sleep 7-8h</span>
-                <span className="pill bg-blue-50 text-blue-700 border border-blue-200">3-4L water</span>
-              </div>
-            </div>
-          </div>
-        </div>
+                  </div>
 
         <Suspense fallback={
           <div className="glass-panel bg-white/90 rounded-3xl shadow-2xl overflow-hidden border border-white/70 p-8">
