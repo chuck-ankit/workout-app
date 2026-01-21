@@ -30,8 +30,8 @@ function WorkoutCard({
 
   if (workout.isRest) {
     return (
-      <div className="bg-gradient-to-br from-blue-400 via-cyan-400 to-teal-400 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl animate-fadeIn overflow-hidden relative optimize-render" style={{ transform: 'translateZ(0)' }}>
-        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" style={{ transform: 'translateZ(0)' }} />
+      <div className="bg-gradient-to-br from-blue-400 via-cyan-400 to-teal-400 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl animate-fadeIn overflow-hidden relative optimize-render">
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
         <div className="relative z-10">
           <div className="animate-float mb-6">
             <Armchair className="w-16 md:w-20 h-16 md:h-20 mx-auto" strokeWidth={1.5} />
@@ -53,7 +53,7 @@ function WorkoutCard({
   }
 
   return (
-    <div className="glass-panel bg-white/90 rounded-3xl shadow-2xl overflow-hidden animate-fadeIn border border-white/70 optimize-render" style={{ transform: 'translateZ(0)' }}>
+    <div className="glass-panel bg-white/90 rounded-3xl shadow-2xl overflow-hidden animate-fadeIn border border-white/70 optimize-render">
       <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-600 px-6 md:px-8 py-6 md:py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>

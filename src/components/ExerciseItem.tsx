@@ -29,11 +29,19 @@ function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemPr
     Obliques: 'bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200',
   }), []);
 
+  const animationDelay = useMemo(() => {
+    // Disable staggered animations on mobile for better performance
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      return '0ms';
+    }
+    return `${Math.min(index * 30, 300)}ms`;
+  }, [index]);
+
   return (
     <div
       className="group animate-slideIn optimize-render"
       style={{ 
-        animationDelay: `${Math.min(index * 30, 300)}ms`,
+        animationDelay,
         transform: 'translateZ(0)'
       }}
     >
@@ -93,7 +101,7 @@ function ExerciseItem({ exercise, isCompleted, onToggle, index }: ExerciseItemPr
       </div>
 
       {isExpanded && exercise.muscleGroup && (
-        <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-4 md:p-5 rounded-b-2xl animate-expandDown border-t border-teal-200 shadow-md optimize-render" style={{ transform: 'translateZ(0)' }}>
+        <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-4 md:p-5 rounded-b-2xl animate-expandDown border-t border-teal-200 shadow-md optimize-render">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-white rounded-lg border border-teal-200">
