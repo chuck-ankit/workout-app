@@ -9,6 +9,7 @@ export interface Exercise {
 export interface WorkoutDay {
   day: string;
   focus: string;
+  warmup?: string[];
   exercises: Exercise[];
   isRest?: boolean;
 }

@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { Armchair, Sparkles, Flame } from 'lucide-react';
+import { Armchair, Sparkles, Flame, Activity } from 'lucide-react';
 import { WorkoutDay } from '../types/workout';
 import ExerciseItem from './ExerciseItem';
 
@@ -72,6 +72,25 @@ function WorkoutCard({
       </div>
 
       <div className="p-6 md:p-8 space-y-3 md:space-y-4" style={{ contain: 'layout style' }}>
+        {workout.warmup && workout.warmup.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="w-5 h-5 text-teal-600" />
+              <h3 className="text-lg font-semibold text-gray-800">Warmup</h3>
+            </div>
+            <div className="bg-teal-50 rounded-xl p-4 border border-teal-100">
+              <ul className="space-y-2">
+                {workout.warmup.map((warmupItem, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className="text-teal-500 mt-0.5">•</span>
+                    <span>{warmupItem}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        
         {workout.exercises.map((exercise, index) => {
           const exerciseId = `d${dayIndex}-e${index}`;
           return (

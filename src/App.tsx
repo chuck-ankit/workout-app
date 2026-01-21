@@ -6,6 +6,18 @@ import WorkoutCard from './components/WorkoutCard';
 import { supabase, hasSupabaseConfig } from './lib/supabaseClient';
 import { getWeekStartDateString, getCurrentDayIndex } from './lib/workoutUtils';
 
+// Filter out browser extension errors
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  const message = args[0];
+  if (typeof message === 'string' && 
+      (message.includes('Could not establish connection') || 
+       message.includes('Receiving end does not exist'))) {
+    return; // Suppress browser extension errors
+  }
+  originalConsoleError.apply(console, args);
+};
+
 // Lazy load InfoBoxes as it's below the fold
 const InfoBoxes = lazy(() => import('./components/InfoBoxes'));
 
@@ -129,14 +141,21 @@ function App() {
       .eq('week_start_date', weekStart);
 
     if (error) {
-      // If table doesn't exist, cache this to avoid future 404 errors
-      if (error.code === 'PGRST205') {
-        localStorage.setItem('supabase_table_exists', 'false');
-        // Fallback to localStorage silently
+      // Filter out browser extension errors and network errors that are expected
+      const errorMessage = error.message || '';
+      if (errorMessage.includes('Could not establish connection') || 
+          errorMessage.includes('Receiving end does not exist') ||
+          errorMessage.includes('Failed to fetch') ||
+          error.code === 'PGRST205') {
+        // Table doesn't exist or network error - cache this to avoid future errors
+        if (error.code === 'PGRST205') {
+          localStorage.setItem('supabase_table_exists', 'false');
+        }
+        // Fallback to localStorage silently for these expected errors
         loadLocalProgress();
         return;
       }
-      // Other errors - log them
+      // Other unexpected errors - log them
       console.error('Error loading progress from database:', error);
       // Fallback to localStorage if database query fails
       loadLocalProgress();
@@ -226,9 +245,16 @@ function App() {
                 .maybeSingle();
 
               if (selectError) {
-                // If table doesn't exist, cache this to avoid future 404 errors
-                if (selectError.code === 'PGRST205') {
-                  localStorage.setItem('supabase_table_exists', 'false');
+                // Filter out browser extension errors and network errors that are expected
+                const errorMessage = selectError.message || '';
+                if (errorMessage.includes('Could not establish connection') || 
+                    errorMessage.includes('Receiving end does not exist') ||
+                    errorMessage.includes('Failed to fetch') ||
+                    selectError.code === 'PGRST205') {
+                  // Table doesn't exist or network error - cache this to avoid future errors
+                  if (selectError.code === 'PGRST205') {
+                    localStorage.setItem('supabase_table_exists', 'false');
+                  }
                 } else {
                   console.error('Error checking existing record:', selectError);
                 }
@@ -246,9 +272,16 @@ function App() {
                   .eq('id', existingData.id);
                 
                 if (updateError) {
-                  // If table doesn't exist, cache this to avoid future 404 errors
-                  if (updateError.code === 'PGRST205') {
-                    localStorage.setItem('supabase_table_exists', 'false');
+                  // Filter out browser extension errors and network errors that are expected
+                  const errorMessage = updateError.message || '';
+                  if (errorMessage.includes('Could not establish connection') || 
+                      errorMessage.includes('Receiving end does not exist') ||
+                      errorMessage.includes('Failed to fetch') ||
+                      updateError.code === 'PGRST205') {
+                    // Table doesn't exist or network error - cache this to avoid future errors
+                    if (updateError.code === 'PGRST205') {
+                      localStorage.setItem('supabase_table_exists', 'false');
+                    }
                   } else {
                     console.error('Error updating progress to database:', updateError);
                   }
@@ -263,9 +296,16 @@ function App() {
                   .insert(progressData);
                 
                 if (insertError) {
-                  // If table doesn't exist, cache this to avoid future 404 errors
-                  if (insertError.code === 'PGRST205') {
-                    localStorage.setItem('supabase_table_exists', 'false');
+                  // Filter out browser extension errors and network errors that are expected
+                  const errorMessage = insertError.message || '';
+                  if (errorMessage.includes('Could not establish connection') || 
+                      errorMessage.includes('Receiving end does not exist') ||
+                      errorMessage.includes('Failed to fetch') ||
+                      insertError.code === 'PGRST205') {
+                    // Table doesn't exist or network error - cache this to avoid future errors
+                    if (insertError.code === 'PGRST205') {
+                      localStorage.setItem('supabase_table_exists', 'false');
+                    }
                   } else {
                     console.error('Error inserting progress to database:', insertError);
                   }
