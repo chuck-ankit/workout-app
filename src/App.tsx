@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } fro
 import { workoutData } from './data/workoutData';
 import Header from './components/Header';
 import DayTabs from './components/DayTabs';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { supabase, hasSupabaseConfig } from './lib/supabaseClient';
 import { getWeekStartDateString, getCurrentDayIndex } from './lib/workoutUtils';
 
@@ -378,28 +379,24 @@ function App() {
   const dayNames = useMemo(() => workoutData.map((d) => d.day), []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 bg-grid-pattern overflow-x-hidden relative optimize-render">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 bg-grid-pattern overflow-x-hidden relative">
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -left-10 top-10 w-80 h-80 bg-teal-200/30 blur-3xl rounded-full" />
+        <div className="absolute -left-20 top-10 w-80 h-80 bg-teal-200/30 blur-3xl rounded-full" />
         <div className="absolute right-0 bottom-10 w-72 h-72 bg-cyan-200/30 blur-3xl rounded-full" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 py-6 md:py-10 space-y-8 optimize-render">
+      <div className="relative max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-8 space-y-5 md:space-y-7">
         <Header progress={weekProgress} isLoading={isLoading} />
 
-        <div className="glass-panel rounded-3xl p-4 md:p-6 space-y-5">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+        <div className="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex items-center gap-3">
               <span className="pill bg-teal-100 text-teal-800">Week Planner</span>
-              <span className="text-sm md:text-base font-semibold text-gray-800">
-                {todaysFocus || 'Choose a day to see the focus'}
-              </span>
+              <span className="text-base font-semibold text-gray-800">{todaysFocus || 'Select a day'}</span>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-              <span className="pill bg-white text-gray-700 border border-gray-200">Next Rest: {nextRestDay}</span>
-              <span className="pill bg-cyan-100 text-cyan-800 border border-cyan-200">
-                {completedExercises.size}/{totalExercises} exercises completed
-              </span>
+            <div className="flex items-center gap-3 text-sm">
+              <span className="pill bg-white text-gray-700 border border-gray-200">{nextRestDay}</span>
+              <span className="pill bg-cyan-100 text-cyan-800">{completedExercises.size}/{totalExercises}</span>
             </div>
           </div>
 
@@ -409,8 +406,7 @@ function App() {
             onDayChange={setActiveDay}
             completedDays={completedDays}
           />
-
-                  </div>
+        </div>
 
         <Suspense fallback={
           <div className="glass-panel bg-white/90 rounded-3xl shadow-2xl overflow-hidden border border-white/70 p-8">
@@ -431,12 +427,14 @@ function App() {
           />
         </Suspense>
 
-        <Suspense fallback={<div className="h-48" />}>
+        <Suspense fallback={<div className="h-32" />}>
           <InfoBoxes />
         </Suspense>
 
-        <footer className="text-center text-gray-600 text-xs md:text-sm py-8">
-          <p className="font-semibold">Stay consistent. Stay strong. Transform your life.</p>
+        <PWAInstallPrompt />
+
+        <footer className="text-center text-gray-400 text-xs py-4">
+          <p className="font-medium">Stay consistent. Stay strong.</p>
         </footer>
       </div>
     </div>
