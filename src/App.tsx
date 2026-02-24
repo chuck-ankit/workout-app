@@ -385,16 +385,16 @@ function App() {
         <div className="absolute right-0 bottom-10 w-72 h-72 bg-cyan-200/30 blur-3xl rounded-full" />
       </div>
 
-      <div className="relative max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-8 space-y-5 md:space-y-7">
+      <div className="relative max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-5 space-y-4 sm:space-y-5">
         <Header progress={weekProgress} isLoading={isLoading} />
 
-        <div className="glass-panel rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div className="flex items-center gap-3">
+        <div className="glass-panel rounded-2xl p-3 sm:p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2">
               <span className="pill bg-teal-100 text-teal-800">Week Planner</span>
-              <span className="text-base font-semibold text-gray-800">{todaysFocus || 'Select a day'}</span>
+              <span className="text-sm font-semibold text-gray-800">{todaysFocus || 'Select a day'}</span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
               <span className="pill bg-white text-gray-700 border border-gray-200">{nextRestDay}</span>
               <span className="pill bg-cyan-100 text-cyan-800">{completedExercises.size}/{totalExercises}</span>
             </div>

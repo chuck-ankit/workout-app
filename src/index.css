@@ -48,40 +48,23 @@
 @layer components {
   .glass-panel {
     @apply bg-white/80 backdrop-blur-sm border border-white/60 shadow-[0_20px_60px_rgba(15,23,42,0.08)];
-    contain: layout style paint;
-    /* GPU acceleration only when needed */
-    transform: translateZ(0);
-    /* Prevent layout shift with explicit dimensions */
-    min-height: var(--content-min-height);
-    /* Reduce backdrop blur on mobile for better performance */
-  }
-
-  @media (max-width: 768px) {
-    .glass-panel {
-      backdrop-blur: none;
-      background: rgba(255, 255, 255, 0.95);
-    }
   }
 
   .pill {
     @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase;
-    contain: layout style;
-    /* Prevent layout shift */
     height: fit-content;
     white-space: nowrap;
   }
   
-  /* Exercise item with explicit dimensions to prevent CLS */
   .exercise-item {
     min-height: var(--exercise-item-height);
-    contain: layout style;
   }
-  
-  /* Day tabs with fixed height to prevent CLS */
-  .day-tab {
-    height: var(--day-tab-height);
-    min-width: 96px;
-    contain: layout style;
+}
+
+@media (max-width: 768px) {
+  .glass-panel {
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.95);
   }
 }
 

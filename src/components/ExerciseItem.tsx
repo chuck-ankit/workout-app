@@ -43,7 +43,7 @@ function ExerciseItem({ exercise, isCompleted, onToggle }: ExerciseItemProps) {
     <div className="group exercise-item animate-fadeInUp" style={{ animationDuration: '0.3s' }}>
       <div
         className={`
-          flex items-center gap-3 p-3 md:p-4 rounded-xl
+          flex items-center gap-2 p-2.5 md:p-4 rounded-xl
           transition-all duration-200 hover:shadow-md
           ${isCompleted ? 'bg-emerald-50 border border-emerald-200' : 'bg-white border border-gray-200 hover:border-teal-300'}
         `}
@@ -51,48 +51,48 @@ function ExerciseItem({ exercise, isCompleted, onToggle }: ExerciseItemProps) {
         <button
           onClick={handleToggle}
           className={`
-            flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-xl border-2 active:scale-90
+            flex-shrink-0 w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl border-2 active:scale-90
             transition-all duration-150 flex items-center justify-center touch-manipulation
             ${isCompleted ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 hover:border-teal-500 bg-white'}
           `}
         >
-          {isCompleted && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+          {isCompleted && <Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" strokeWidth={3} />}
         </button>
 
         <div className="flex-1 min-w-0">
-          <h4 className={`font-medium text-sm md:text-base truncate ${
+          <h4 className={`font-medium text-xs sm:text-sm ${
             isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'
           }`}>
             {exercise.name}
           </h4>
           {exercise.note && (
-            <p className="text-xs md:text-sm text-gray-500 mt-0.5">{exercise.note}</p>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 hidden sm:block">{exercise.note}</p>
           )}
         </div>
 
-        <span className="px-3 py-1.5 md:px-4 bg-teal-50 text-teal-700 rounded-lg font-semibold text-sm whitespace-nowrap">
+        <span className="px-2 py-1 md:px-3 md:py-1.5 bg-teal-50 text-teal-700 rounded-md font-semibold text-[10px] sm:text-xs whitespace-nowrap">
           {exercise.sets}
         </span>
 
         {exercise.muscleGroup && (
           <button
             onClick={handleExpand}
-            className="flex-shrink-0 p-1.5 text-gray-400 hover:text-teal-600 transition-colors"
+            className="flex-shrink-0 p-1 text-gray-400 hover:text-teal-600 transition-colors"
           >
-            <ChevronDown className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
         )}
       </div>
 
       {isExpanded && exercise.muscleGroup && (
-        <div className="bg-teal-50 p-4 rounded-b-xl border-t border-teal-200 mt-[-2px] animate-fadeIn">
-          <div className="flex items-center gap-3 mb-2">
-            <Activity className="w-4 h-4 text-teal-600" />
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${muscleGroupColors[exercise.muscleGroup] || 'bg-gray-100 text-gray-700'}`}>
+        <div className="bg-teal-50 p-3 md:p-4 rounded-b-xl border-t border-teal-200 mt-[-2px] animate-fadeIn">
+          <div className="flex items-center gap-2 md:gap-3 mb-2">
+            <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-teal-600" />
+            <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-medium ${muscleGroupColors[exercise.muscleGroup] || 'bg-gray-100 text-gray-700'}`}>
               {exercise.muscleGroup}
             </span>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs text-gray-600">
             Focus on controlled movements. Maintain proper form throughout each rep.
           </p>
         </div>
